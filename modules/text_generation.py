@@ -5,6 +5,7 @@ import traceback
 import numpy as np
 import torch
 import transformers
+from transformers.generation.output_validity import validity_check
 
 import modules.shared as shared
 from modules.callbacks import (Iteratorize, Stream,
@@ -191,6 +192,12 @@ def generate_reply(question, generate_state, eos_token=None, stopping_strings=[]
         generate_params.update({'inputs': filler_input_ids})
     else:
         generate_params.update({'inputs': input_ids})
+
+    # add validity check for syntactically-constrained sampling
+    generate_params['output_validity_check'] = validity_check(
+        shared.tokenizer,
+        {"enforce_json": True, "allow_outer_list": False, "allow_empty": False},
+    )
 
     try:
         # Generate the entire reply at once.
