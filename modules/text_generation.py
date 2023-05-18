@@ -108,6 +108,10 @@ def stop_everything_event():
     shared.stop_everything = True
 
 
+def toggle_syntax_constraint():
+    shared.force_json = not shared.force_json
+
+
 def generate_reply(question, generate_state, eos_token=None, stopping_strings=[]):
     clear_torch_cache()
     set_manual_seed(generate_state['seed'])
@@ -194,10 +198,11 @@ def generate_reply(question, generate_state, eos_token=None, stopping_strings=[]
         generate_params.update({'inputs': input_ids})
 
     # add validity check for syntactically-constrained sampling
-    generate_params['output_validity_check'] = validity_check(
-        shared.tokenizer,
-        {"enforce_json": True, "allow_outer_list": False, "allow_empty": False},
-    )
+    if shared.force_json:
+        generate_params['output_validity_check'] = validity_check(
+            shared.tokenizer,
+            {"enforce_json": True, "allow_outer_list": False, "allow_empty": False},
+        )
 
     try:
         # Generate the entire reply at once.

@@ -127,6 +127,9 @@ def load_quantized(model_name):
         print("Could not find the quantized model in .pt or .safetensors format, exiting...")
         exit()
 
+    print(path_to_model)
+    print(pt_path)
+
     # qwopqwop200's offload
     if model_type == 'llama' and shared.args.pre_layer:
         model = load_quant(str(path_to_model), str(pt_path), shared.args.wbits, shared.args.groupsize, shared.args.pre_layer)

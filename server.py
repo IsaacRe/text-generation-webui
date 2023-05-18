@@ -19,7 +19,7 @@ from modules import api, chat, shared, training, ui
 from modules.html_generator import chat_html_wrapper
 from modules.LoRA import add_lora_to_model
 from modules.models import load_model, load_soft_prompt, unload_model
-from modules.text_generation import generate_reply, stop_everything_event
+from modules.text_generation import generate_reply, stop_everything_event, toggle_syntax_constraint
 
 # Loading custom settings
 settings_file = None
@@ -325,6 +325,7 @@ def create_interface():
                 shared.gradio['textbox'] = gr.Textbox(label='Input')
                 with gr.Row():
                     shared.gradio['Generate'] = gr.Button('Generate', elem_id='Generate')
+                    shared.gradio['Toggle syntax'] = gr.Button('Toggle syntax')
                     shared.gradio['Stop'] = gr.Button('Stop', elem_id="stop")
                 with gr.Row():
                     shared.gradio['Impersonate'] = gr.Button('Impersonate')
@@ -455,6 +456,14 @@ def create_interface():
             shared.gradio['interface'].load(None, None, None, _js=f"() => {{{ui.main_js+ui.chat_js}}}")
             shared.gradio['interface'].load(chat.load_default_history, [shared.gradio[k] for k in ['name1', 'name2']], None)
             shared.gradio['interface'].load(chat.redraw_html, reload_inputs, [shared.gradio['display']], show_progress=True)
+
+            def toggle_button_color(button):
+                if shared.force_json:
+                    button.style["primaryColor"] = "red"
+                else:
+                    button.style["primaryColor"] = "blue"
+                gr.update(visible=True)
+            shared.gradio['Toggle syntax'].click(lambda: [toggle_syntax_constraint(), toggle_button_color(shared.gradio['Toggle syntax'])])
 
         elif shared.args.notebook:
             with gr.Tab("Text generation", elem_id="main"):
