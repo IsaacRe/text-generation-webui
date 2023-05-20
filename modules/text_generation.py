@@ -197,11 +197,19 @@ def generate_reply(question, generate_state, eos_token=None, stopping_strings=[]
     else:
         generate_params.update({'inputs': input_ids})
 
+    json_schema = """[]{
+        name: string,
+        year_elected: number,
+        age_elected: number,
+        term_length?: number
+    }"""
+
     # add validity check for syntactically-constrained sampling
     if shared.force_json:
         generate_params['output_validity_check'] = validity_check(
             shared.tokenizer,
-            {"enforce_json": True, "allow_outer_list": False, "allow_empty": False},
+            #{"enforce_json": True, "allow_outer_list": False, "allow_empty": False},
+            {"enforce_json_schema": json_schema, "num_workers": 16}
         )
 
     try:
