@@ -323,9 +323,10 @@ def create_interface():
             with gr.Tab("Text generation", elem_id="main"):
                 shared.gradio['display'] = gr.HTML(value=chat_html_wrapper(shared.history['visible'], shared.settings['name1'], shared.settings['name2'], 'cai-chat'))
                 shared.gradio['textbox'] = gr.Textbox(label='Input')
+                shared.gradio['constraintbox'] = gr.Textbox(label='Constraint')
                 with gr.Row():
                     shared.gradio['Generate'] = gr.Button('Generate', elem_id='Generate')
-                    shared.gradio['Toggle syntax'] = gr.Button('Toggle syntax')
+                    shared.gradio['Toggle syntax'] = gr.Radio(choices=['valid-json', 'json-schema', 'none'], value=['none'], label='Constraint mode')
                     shared.gradio['Stop'] = gr.Button('Stop', elem_id="stop")
                 with gr.Row():
                     shared.gradio['Impersonate'] = gr.Button('Impersonate')
@@ -394,7 +395,7 @@ def create_interface():
 
                 create_settings_menus(default_preset)
 
-            shared.input_params = [shared.gradio[k] for k in ['Chat input', 'generate_state', 'name1', 'name2', 'context', 'Chat mode', 'end_of_turn']]
+            shared.input_params = [shared.gradio[k] for k in ['Chat input', 'generate_state', 'name1', 'name2', 'context', 'Chat mode', 'end_of_turn', 'constraintbox', 'Toggle syntax']]
             clear_arr = [shared.gradio[k] for k in ['Clear history-confirm', 'Clear history', 'Clear history-cancel']]
             reload_inputs = [shared.gradio[k] for k in ['name1', 'name2', 'Chat mode']]
 
@@ -457,13 +458,13 @@ def create_interface():
             shared.gradio['interface'].load(chat.load_default_history, [shared.gradio[k] for k in ['name1', 'name2']], None)
             shared.gradio['interface'].load(chat.redraw_html, reload_inputs, [shared.gradio['display']], show_progress=True)
 
-            def toggle_button_color(button):
-                if shared.force_json:
-                    button.style["primaryColor"] = "red"
-                else:
-                    button.style["primaryColor"] = "blue"
-                gr.update(visible=True)
-            shared.gradio['Toggle syntax'].click(lambda: [toggle_syntax_constraint(), toggle_button_color(shared.gradio['Toggle syntax'])])
+            # def toggle_button_color(button):
+            #     if shared.force_json:
+            #         button.theme.background_color = "red"
+            #     else:
+            #         button.theme.background_color = "blue"
+            #     gr.update(visible=True)
+            # shared.gradio['Toggle syntax'].click(lambda: [toggle_syntax_constraint(), toggle_button_color(shared.gradio['Toggle syntax'])])
 
         elif shared.args.notebook:
             with gr.Tab("Text generation", elem_id="main"):
@@ -526,7 +527,7 @@ def create_interface():
             with gr.Tab("Parameters", elem_id="parameters"):
                 create_settings_menus(default_preset)
 
-            shared.input_params = [shared.gradio[k] for k in ['textbox', 'generate_state']]
+            shared.input_params = [shared.gradio[k] for k in ['textbox', 'generate_state', 'constraintbox']]
             output_params = [shared.gradio[k] for k in ['output_textbox', 'markdown', 'html']]
             gen_events.append(shared.gradio['Generate'].click(generate_reply, shared.input_params, output_params, show_progress=shared.args.no_stream))
             gen_events.append(shared.gradio['textbox'].submit(generate_reply, shared.input_params, output_params, show_progress=shared.args.no_stream))

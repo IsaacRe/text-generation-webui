@@ -99,7 +99,8 @@ def extract_message_from_reply(reply, name1, name2, stop_at_newline):
     return reply, next_character_found
 
 
-def chatbot_wrapper(text, generate_state, name1, name2, context, mode, end_of_turn, regenerate=False):
+def chatbot_wrapper(text, generate_state, name1, name2, context, mode, end_of_turn, regenerate=False, json_schema="", constraint_toggle=None):
+    print(f"toggle value: {constraint_toggle}, schema: {json_schema}\n\n")
     if mode == 'instruct':
         stopping_strings = [f"\n{name1}", f"\n{name2}"]
     else:
@@ -137,10 +138,13 @@ def chatbot_wrapper(text, generate_state, name1, name2, context, mode, end_of_tu
     if not regenerate:
         yield shared.history['visible'] + [[visible_text, shared.processing_message]]
 
+    if constraint_toggle != 'json-schema':
+        json_schema = ""
+
     # Generate
     for i in range(generate_state['chat_generation_attempts']):
         reply = None
-        for reply in generate_reply(f"{prompt}{' ' if len(cumulative_reply) > 0 else ''}{cumulative_reply}", generate_state, eos_token=eos_token, stopping_strings=stopping_strings):
+        for reply in generate_reply(f"{prompt}{' ' if len(cumulative_reply) > 0 else ''}{cumulative_reply}", generate_state, eos_token=eos_token, stopping_strings=stopping_strings, json_constraint=json_schema):
             reply = cumulative_reply + reply
 
             # Extracting the reply
@@ -202,8 +206,8 @@ def impersonate_wrapper(text, generate_state, name1, name2, context, mode, end_o
     yield reply
 
 
-def cai_chatbot_wrapper(text, generate_state, name1, name2, context, mode, end_of_turn):
-    for history in chatbot_wrapper(text, generate_state, name1, name2, context, mode, end_of_turn):
+def cai_chatbot_wrapper(text, generate_state, name1, name2, context, mode, end_of_turn, json_schema, constraint_toggle):
+    for history in chatbot_wrapper(text, generate_state, name1, name2, context, mode, end_of_turn, json_schema=json_schema, constraint_toggle=constraint_toggle):
         yield chat_html_wrapper(history, name1, name2, mode)
 
 
