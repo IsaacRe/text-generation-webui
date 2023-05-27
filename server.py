@@ -321,12 +321,13 @@ def create_interface():
         if shared.is_chat():
             shared.gradio['Chat input'] = gr.State()
             with gr.Tab("Text generation", elem_id="main"):
+                start_schema = "{\n\toutput: string,\n\tarray_output: []number,\n\toptional_output?: number,\n\tnested_schema: []{\n\t\tinner_output: string\n\t}\n}"
                 shared.gradio['display'] = gr.HTML(value=chat_html_wrapper(shared.history['visible'], shared.settings['name1'], shared.settings['name2'], 'cai-chat'))
                 shared.gradio['textbox'] = gr.Textbox(label='Input')
-                shared.gradio['constraintbox'] = gr.Textbox(label='Constraint')
+                shared.gradio['Toggle syntax'] = gr.Radio(choices=['json-schema', 'one-of', 'none'], value='json-schema', label='Constraint mode')
+                shared.gradio['constraintbox'] = gr.Textbox(label='Constraint', value=start_schema)
                 with gr.Row():
                     shared.gradio['Generate'] = gr.Button('Generate', elem_id='Generate')
-                    shared.gradio['Toggle syntax'] = gr.Radio(choices=['valid-json', 'json-schema', 'none'], value=['none'], label='Constraint mode')
                     shared.gradio['Stop'] = gr.Button('Stop', elem_id="stop")
                 with gr.Row():
                     shared.gradio['Impersonate'] = gr.Button('Impersonate')

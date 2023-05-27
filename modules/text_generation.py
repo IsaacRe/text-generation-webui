@@ -112,7 +112,7 @@ def toggle_syntax_constraint():
     shared.force_json = not shared.force_json
 
 
-def generate_reply(question, generate_state, eos_token=None, stopping_strings=[], json_constraint=""):
+def generate_reply(question, generate_state, eos_token=None, stopping_strings=[], json_constraint="", valid_json=False, one_of=""):
     clear_torch_cache()
     set_manual_seed(generate_state['seed'])
     shared.stop_everything = False
@@ -197,19 +197,21 @@ def generate_reply(question, generate_state, eos_token=None, stopping_strings=[]
     else:
         generate_params.update({'inputs': input_ids})
 
-    json_schema = """[]{
-        name: string,
-        year_elected: number,
-        age_elected: number,
-        term_length?: number
-    }"""
-
     # add validity check for syntactically-constrained sampling
     if json_constraint:
         generate_params['output_validity_check'] = validity_check(
             shared.tokenizer,
-            #{"enforce_json": True, "allow_outer_list": False, "allow_empty": False},
             {"enforce_json_schema": json_constraint, "num_workers": 16}
+        )
+    elif valid_json:
+        generate_params['output_validity_check'] = validity_check(
+            shared.tokenizer,
+            {"enforce_json": True, "allow_outer_list": False, "allow_empty": False},
+        )
+    elif one_of:
+        generate_params['output_validity_check'] = validity_check(
+            shared.tokenizer,
+            {"enforce_one_of": one_of},
         )
 
     try:
